@@ -7,6 +7,15 @@ const app = express();
 
 app.use(express.json());
 
+app.post("/webhook", async (req, res) => {
+
+  console.log("WEBHOOK HIT");
+  console.log(JSON.stringify(req.body, null, 2));
+
+});
+
+
+
 app.get("/", (req, res) => {
   res.send("PIM AI Assistant Running");
 });
@@ -66,3 +75,4 @@ app.listen(3000, () => {
     "Server running on port 3000"
   );
 });
+
