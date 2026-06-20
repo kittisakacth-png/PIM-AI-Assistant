@@ -1,4 +1,6 @@
 require("dotenv").config();
+const { askAI } =
+  require("./ai");
 
 console.log(
   process.env.LINE_CHANNEL_ACCESS_TOKEN
@@ -39,7 +41,10 @@ app.post("/webhook", async (req, res) => {
 
       const userMessage =
         event.message.text;
-
+const aiReply =
+  await askAI(
+    userMessage
+  );
       try {
 
         await axios.post(
@@ -50,8 +55,7 @@ app.post("/webhook", async (req, res) => {
             messages: [
               {
                 type: "text",
-                text:
-                  `คุณพิมพ์ว่า: ${userMessage}`
+                text: aiReply
               }
             ]
           },
