@@ -13,6 +13,10 @@ app.get("/", (req, res) => {
 
 app.post("/webhook", async (req, res) => {
 
+  console.log(
+    JSON.stringify(req.body, null, 2)
+  );
+
   const events = req.body.events;
 
   if (!events) {
