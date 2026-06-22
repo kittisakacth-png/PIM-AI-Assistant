@@ -5,43 +5,46 @@ async function searchDocuments(question) {
   const snapshot =
     await db.collection("documents").get();
 
-  let context = "";
+  let bestMatch = "";
 
   snapshot.forEach((doc) => {
 
     const data = doc.data();
 
-    console.log(
-      "DOC:",
-      doc.id,
-      Object.keys(data)
-    );
-
     if (
       !data.content ||
       typeof data.content !== "string"
     ) {
-      console.log(
-        "SKIP DOC:",
-        doc.id
-      );
       return;
     }
 
-    context +=
-      `\n[${data.fileName || doc.id}]\n`;
+    const content =
+      data.content.toLowerCase();
 
-    context +=
-      data.content.substring(
-        0,
-        1000
+    const keywords =
+      question
+        .toLowerCase()
+        .split(" ");
+
+    const found =
+      keywords.some(
+        word =>
+          content.includes(word)
       );
 
-    context += "\n";
+    if (found) {
+
+      bestMatch =
+        data.content.substring(
+          0,
+          1500
+        );
+
+    }
 
   });
 
-  return context;
+  return bestMatch;
 }
 
 module.exports = {

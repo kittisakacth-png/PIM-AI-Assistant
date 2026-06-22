@@ -62,16 +62,24 @@ if (
     userMessage
   );
 
-console.log(
-  "Context Length:",
-  context.length
-);
+let aiReply;
 
-const aiReply =
-  await askAI(
-    userMessage,
-    context
-  );
+if (context) {
+
+  aiReply =
+    await askAI(
+      userMessage,
+      context
+    );
+
+} else {
+
+  aiReply =
+    await askAI(
+      userMessage
+    );
+
+}
 
   try {
 
