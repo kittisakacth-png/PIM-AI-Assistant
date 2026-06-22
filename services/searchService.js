@@ -2,34 +2,41 @@ const db = require("../config/firebase");
 
 async function searchDocuments(question) {
 
-const snapshot =
-await db
-.collection("documents")
-.get();
+  const snapshot =
+    await db
+      .collection("documents")
+      .get();
 
-let context = "";
+  let context = "";
 
-snapshot.forEach((doc) => {
+  snapshot.forEach((doc) => {
 
-const data =
-  doc.data();
+    const data = doc.data();
 
-context +=
-  `\n[${data.fileName}]\n`;
+    if (!data.content) {
+      console.log(
+        "Missing content:",
+        doc.id
+      );
+      return;
+    }
 
-context +=
-  data.content.substring(
-    0,
-    3000
-  );
+    context +=
+      `\n[${data.fileName || "Unknown"}]\n`;
 
-context += "\n";
+    context +=
+      data.content.substring(
+        0,
+        3000
+      );
 
-});
+    context += "\n";
 
-return context;
+  });
+
+  return context;
 }
 
 module.exports = {
-searchDocuments
+  searchDocuments
 };
