@@ -1,11 +1,11 @@
 const axios = require("axios");
 
 async function askAI(
-question,
-context = ""
+  question,
+  context = ""
 ) {
 
-const prompt = `
+  const prompt = `
 ข้อมูลจากเอกสาร:
 
 ${context}
@@ -14,50 +14,65 @@ ${context}
 ${question}
 
 ตอบจากข้อมูลในเอกสารเท่านั้น
-หากไม่พบข้อมูลให้ตอบว่า
+หากไม่พบข้อมูลในเอกสารให้ตอบว่า
 "ไม่พบข้อมูลในเอกสาร"
 `;
 
-const response =
-await axios.post(
-"http://thaillm.or.th/api/v1/chat/completions",
-{
-model:
-"pathumma-thaillm-qwen3-8b-think-3.0.0",
-
-    messages: [
+  const response =
+    await axios.post(
+      "http://thaillm.or.th/api/v1/chat/completions",
       {
-        role: "system",
-        content:
-          "คุณคือ PIM AI Assistant ตอบสั้น กระชับ และห้ามแสดงขั้นตอนการคิด"
+        model:
+          "pathumma-thaillm-qwen3-8b-think-3.0.0",
+
+        messages: [
+          {
+            role: "system",
+            content: `
+คุณคือ PIM AI Assistant
+
+ตอบเป็นภาษาไทย
+
+ห้ามแสดงขั้นตอนการคิด
+ห้ามแสดง reasoning
+ห้ามแสดง chain of thought
+ห้ามแสดง <think>
+
+ตอบเฉพาะคำตอบสุดท้ายเท่านั้น
+`
+          },
+          {
+            role: "user",
+            content: prompt
+          }
+        ],
+
+        max_tokens: 512,
+        temperature: 0.3
       },
       {
-        role: "user",
-        content: prompt
+        headers: {
+          Authorization:
+            `Bearer ${process.env.THAILLM_API_KEY}`,
+          "Content-Type":
+            "application/json"
+        }
       }
-    ],
+    );
 
-    max_tokens: 512,
-    temperature: 0.3
-  },
-  {
-    headers: {
-      Authorization:
-        `Bearer ${process.env.THAILLM_API_KEY}`,
-      "Content-Type":
-        "application/json"
-    }
-  }
-);
+  const reply =
+    response.data
+      .choices[0]
+      .message.content;
 
-const reply =
-response.data
-.choices[0]
-.message.content;
-
-return reply.trim();
+  return reply
+    .replace(
+      /<think>[\s\S]*?<\/think>/gi,
+      ""
+    )
+    .trim();
 }
 
 module.exports = {
-askAI
+  askAI
 };
