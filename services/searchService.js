@@ -34,7 +34,7 @@ async function searchDocuments(question) {
     context +=
       data.content.substring(
         0,
-        3000
+        1000
       );
 
     context += "\n";

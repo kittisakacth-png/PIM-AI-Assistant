@@ -18,17 +18,19 @@ ${question}
 "ไม่พบข้อมูลในเอกสาร"
 `;
 
-  const response =
-    await axios.post(
-      "http://thaillm.or.th/api/v1/chat/completions",
-      {
-        model:
-          "pathumma-thaillm-qwen3-8b-think-3.0.0",
+  try {
 
-        messages: [
-          {
-            role: "system",
-            content: `
+    const response =
+      await axios.post(
+        "http://thaillm.or.th/api/v1/chat/completions",
+        {
+          model:
+            "pathumma-thaillm-qwen3-8b-think-3.0.0",
+
+          messages: [
+            {
+              role: "system",
+              content: `
 คุณคือ PIM AI Assistant
 
 ตอบเป็นภาษาไทย
@@ -40,37 +42,53 @@ ${question}
 
 ตอบเฉพาะคำตอบสุดท้ายเท่านั้น
 `
-          },
-          {
-            role: "user",
-            content: prompt
-          }
-        ],
+            },
+            {
+              role: "user",
+              content: prompt
+            }
+          ],
 
-        max_tokens: 512,
-        temperature: 0.3
-      },
-      {
-        headers: {
-          Authorization:
-            `Bearer ${process.env.THAILLM_API_KEY}`,
-          "Content-Type":
-            "application/json"
+          max_tokens: 512,
+          temperature: 0.3
+        },
+        {
+          headers: {
+            Authorization:
+              `Bearer ${process.env.THAILLM_API_KEY}`,
+            "Content-Type":
+              "application/json"
+          }
         }
-      }
+      );
+
+    const reply =
+      response.data
+        .choices[0]
+        .message.content;
+
+    return reply
+      .replace(
+        /<think>[\s\S]*?<\/think>/gi,
+        ""
+      )
+      .trim();
+
+  } catch (error) {
+
+    console.log(
+      "THAILLM ERROR:"
     );
 
-  const reply =
-    response.data
-      .choices[0]
-      .message.content;
+    console.log(
+      error.response?.data ||
+      error.message
+    );
 
-  return reply
-    .replace(
-      /<think>[\s\S]*?<\/think>/gi,
-      ""
-    )
-    .trim();
+    return "ขออภัย ระบบ AI ไม่สามารถตอบได้ชั่วคราว";
+
+  }
+
 }
 
 module.exports = {
