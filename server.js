@@ -4,6 +4,7 @@ const {
 } = require(
   "./services/pdfService"
 );
+
 const { searchDocuments }
   = require("./services/searchService");
 const {
@@ -11,6 +12,8 @@ const {
 } = require(
   "./services/firestoreService"
 );
+const documentRoutes =
+  require("./routes/documentRoutes");
 const express = require("express");
 const axios = require("axios");
 const multer = require("multer");
@@ -195,6 +198,12 @@ console.log(
 
 const PORT =
 process.env.PORT || 3000;
+
+
+app.use(
+  "/documents",
+  documentRoutes
+);
 
 app.listen(PORT, () => {
 console.log(
