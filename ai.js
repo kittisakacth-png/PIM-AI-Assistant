@@ -84,12 +84,21 @@ ${question}
         .choices[0]
         .message.content;
 
-    return reply
-      .replace(
-        /<think>[\s\S]*?<\/think>/gi,
-        ""
-      )
-      .trim();
+   let answer = reply;
+
+// ถ้าขึ้นต้นด้วย <think> แต่ไม่มี </think>
+// ไม่ส่ง reasoning กลับไปหาผู้ใช้
+if (answer.trim().startsWith("<think>")) {
+  return "ขออภัย ระบบกำลังประมวลผลใหม่ กรุณาลองถามใหม่อีกครั้ง";
+}
+
+// กรณีมี <think>...</think> ครบ
+answer = answer.replace(
+  /<think>[\s\S]*?<\/think>/gi,
+  ""
+);
+
+return answer.trim();
 
   } catch (error) {
 
