@@ -90,13 +90,7 @@ console.log(reply);
 
    let answer = reply;
 
-// ถ้าขึ้นต้นด้วย  Weed แต่ไม่มี  Weed
-// ไม่ส่ง reasoning กลับไปหาผู้ใช้
-if (answer.trim().startsWith("<think>")) {
-  return "ขออภัย ระบบกำลังประมวลผลใหม่ กรุณาลองถามใหม่อีกครั้ง";
-}
-
-// กรณีมี <think>...</think> ครบ
+// ลบ reasoning ทั้งหมด
 answer = answer.replace(
   /<think>[\s\S]*?<\/think>/gi,
   ""
