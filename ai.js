@@ -79,14 +79,18 @@ ${question}
         }
       );
 
-    const reply =
-      response.data
-        .choices[0]
-        .message.content;
+const reply =
+  response.data
+    .choices[0]
+    .message.content;
+
+console.log("AI RAW RESPONSE:");
+console.log(reply);
+
 
    let answer = reply;
 
-// ถ้าขึ้นต้นด้วย <think> แต่ไม่มี </think>
+// ถ้าขึ้นต้นด้วย  Weed แต่ไม่มี  Weed
 // ไม่ส่ง reasoning กลับไปหาผู้ใช้
 if (answer.trim().startsWith("<think>")) {
   return "ขออภัย ระบบกำลังประมวลผลใหม่ กรุณาลองถามใหม่อีกครั้ง";
