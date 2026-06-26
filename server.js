@@ -66,9 +66,13 @@ if (
   await searchDocuments(
     userMessage
   );
-  console.log("========== CONTEXT ==========");
+console.log("========== USER ==========");
+console.log(userMessage);
+
+console.log("========== CONTEXT ==========");
 console.log(context);
-console.log("========== END ==========");
+
+console.log("========== END CONTEXT ==========");
 
 let aiReply;
 
