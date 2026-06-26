@@ -170,13 +170,11 @@ const text = await pdfToText(
 
 const chunks = splitIntoChunks(text);
 
-console.log(
-    "Chunks:",
-    chunks.length
-);
+console.log("Chunks:", chunks.length);
+
 await saveDocument(
     fileName,
-    text
+    chunks
 );
 
 console.log(

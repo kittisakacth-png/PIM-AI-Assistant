@@ -1,97 +1,151 @@
 const db = require("../config/firebase");
 
-function calculateScore(question, paragraph) {
+// คำพ้องที่ใช้บ่อย
+const aliases = {
+    cj: [
+        "cj",
+        "convergent journalism",
+        "convergent journalism and digital media",
+        "วารสารศาสตร์คอนเวอร์เจนท์",
+        "วารสารศาสตร์คอนเวอร์เจนท์และสื่อดิจิทัล"
+    ],
 
-    let score = 0;
+    dccb: [
+        "dccb",
+        "digital communication",
+        "digital communication for corporate and brand",
+        "สื่อสารองค์กร",
+        "การสื่อสารดิจิทัลเพื่อองค์กรและแบรนด์"
+    ],
 
-    const keywords = question
-        .toLowerCase()
-        .replace(/[^\u0E00-\u0E7Fa-zA-Z0-9 ]/g, "")
-        .split(/\s+/)
-        .filter(word => word.length > 1);
+    internship: [
+        "ฝึกงาน",
+        "สถานที่ฝึกงาน",
+        "ฝึกงานที่ไหน",
+        "ฝึกงานที่ใด",
+        "internship"
+    ]
+};
 
-    const text = paragraph.toLowerCase();
+function normalizeQuestion(question) {
 
-    keywords.forEach(keyword => {
+    let q = question.toLowerCase();
 
-        const matches =
-            text.match(
-                new RegExp(keyword, "g")
+    Object.values(aliases).forEach(list => {
+
+        const master = list[0];
+
+        list.forEach(word => {
+
+            q = q.replaceAll(
+                word.toLowerCase(),
+                master
             );
-
-        if (matches) {
-
-            score += matches.length;
-
-        }
-
-    });
-
-    return score;
-
-}
-
-async function searchDocuments(question) {
-
-    const snapshot =
-        await db.collection("documents").get();
-
-    const paragraphs = [];
-
-    snapshot.forEach(doc => {
-
-        const data = doc.data();
-
-        if (!data.content) return;
-
-        const split = data.content
-            .split(/\n\s*\n/)
-            .map(p => p.trim())
-            .filter(p => p.length > 30);
-
-        split.forEach(paragraph => {
-
-            paragraphs.push({
-                text: paragraph,
-                score: calculateScore(
-                    question,
-                    paragraph
-                )
-            });
 
         });
 
     });
 
-    paragraphs.sort(
-        (a, b) =>
-            b.score - a.score
-    );
+    return q;
 
-    const top =
-        paragraphs
-            .slice(0, 5);
+}
+
+async function searchDocuments(question) {
+
+    const q = normalizeQuestion(question);
+
+    const keywords = q
+        .replace(/[^\u0E00-\u0E7Fa-zA-Z0-9 ]/g, " ")
+        .split(/\s+/)
+        .filter(x => x.length > 1);
+
+    const snapshot = await db
+        .collection("chunks")
+        .get();
+
+    const results = [];
+
+    snapshot.forEach(doc => {
+
+        const data = doc.data();
+
+        let score = 0;
+
+        let content =
+            (data.content || "")
+                .toLowerCase();
+
+        content = normalizeQuestion(content);
+
+        keywords.forEach(keyword => {
+
+            if (content.includes(keyword)) {
+
+                score += 10;
+
+            }
+
+        });
+
+        // โบนัสถ้าเจอคำถามแบบฝึกงาน
+        if (
+            q.includes("internship") &&
+            content.includes("internship")
+        ) {
+
+            score += 30;
+
+        }
+
+        // โบนัสถ้าเป็น CJ
+        if (
+            q.includes("cj") &&
+            content.includes("cj")
+        ) {
+
+            score += 40;
+
+        }
+
+        if (score > 0) {
+
+            results.push({
+
+                score,
+
+                content: data.content,
+
+                fileName: data.fileName,
+
+                chunkIndex: data.chunkIndex
+
+            });
+
+        }
+
+    });
+
+    results.sort((a,b)=>b.score-a.score);
+
+    const top = results.slice(0,5);
 
     console.log("========== SEARCH ==========");
 
-    top.forEach(item => {
-
-        console.log(
-            "Score:",
-            item.score
-        );
-
-        console.log(
-            item.text.substring(0,200)
-        );
+    top.forEach(item=>{
 
         console.log("----------------");
+
+        console.log("Score:",item.score);
+
+        console.log("Chunk:",item.chunkIndex);
+
+        console.log(item.content.substring(0,250));
 
     });
 
     return top
-        .map(x => x.text)
-        .join("\n\n----------------\n\n");
+        .map(x=>x.content)
+        .join("\n\n====================\n\n");
 
 }
 
