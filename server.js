@@ -4,7 +4,9 @@ const {
 } = require(
   "./services/pdfService"
 );
-
+const {
+    splitIntoChunks
+} = require("./services/chunkService");
 const { searchDocuments }
   = require("./services/searchService");
 const {
@@ -145,14 +147,29 @@ try {
     req.file.originalname
   );
 
-  const text =
-    await pdfToText(
-      req.file.path
-    );
+  const fileName =
+Buffer.from(
+    req.file.originalname,
+    "latin1"
+).toString("utf8");
 
-    await saveDocument(
-  req.file.originalname,
-  text
+console.log(
+    "Uploaded:",
+    fileName
+);
+const text = await pdfToText(
+    req.file.path
+);
+
+const chunks = splitIntoChunks(text);
+
+console.log(
+    "Chunks:",
+    chunks.length
+);
+await saveDocument(
+    fileName,
+    text
 );
 
 console.log(
@@ -170,12 +187,16 @@ console.log(
   );
 
   res.json({
+
     success: true,
-    file:
-      req.file.originalname,
-    length:
-      text.length
-  });
+
+    file: fileName,
+
+    length: text.length,
+
+    chunks: chunks.length
+
+});
 
 } catch (error) {
 
