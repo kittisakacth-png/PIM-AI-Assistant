@@ -1,5 +1,9 @@
 const db = require("../config/firebase");
-const { extractKeywords } = require("./keywordService");
+const keywordModule = require("./keywordService");
+
+console.log(keywordModule);
+
+const { extractKeywords } = keywordModule;
 async function saveDocument(fileName, chunks) {
 
     const documentRef = await db
