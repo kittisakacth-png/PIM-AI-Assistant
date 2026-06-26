@@ -9,42 +9,81 @@ function cleanText(text) {
 
 }
 
-function splitIntoChunks(text) {
-
-    text = cleanText(text);
-
-    const paragraphs = text
-        .split(/\n\s*\n/)
-        .map(p => p.trim())
-        .filter(p => p.length > 50);
+function splitLongText(text, maxLength = 1200) {
 
     const chunks = [];
 
-    let currentChunk = "";
+    let current = "";
 
-    paragraphs.forEach(paragraph => {
+    const paragraphs = text.split(/\n\s*\n/);
 
-        if ((currentChunk + paragraph).length < 800) {
+    paragraphs.forEach(p => {
 
-            currentChunk += "\n\n" + paragraph;
+        if ((current + "\n\n" + p).length <= maxLength) {
+
+            current += "\n\n" + p;
 
         } else {
 
-            chunks.push(currentChunk.trim());
+            if (current.trim()) {
 
-            currentChunk = paragraph;
+                chunks.push(current.trim());
+
+            }
+
+            current = p;
 
         }
 
     });
 
-    if (currentChunk.length > 0) {
+    if (current.trim()) {
 
-        chunks.push(currentChunk.trim());
+        chunks.push(current.trim());
 
     }
 
     return chunks;
+
+}
+
+function splitIntoChunks(text) {
+
+    text = cleanText(text);
+
+    // ตรวจว่ามี FAQ หรือไม่
+    const qaBlocks = text.split(/(?=\bQ[:：])/i);
+
+    if (qaBlocks.length > 1) {
+
+        const chunks = [];
+
+        qaBlocks.forEach(block => {
+
+            const clean = block.trim();
+
+            if (clean.length < 50) return;
+
+            if (clean.length <= 1500) {
+
+                chunks.push(clean);
+
+            } else {
+
+                chunks.push(...splitLongText(clean));
+
+            }
+
+        });
+
+        console.log("FAQ Chunks:", chunks.length);
+
+        return chunks;
+
+    }
+
+    // ถ้าไม่ใช่ FAQ ใช้วิธีเดิม
+    return splitLongText(text);
 
 }
 
